@@ -777,9 +777,9 @@ VOID failuresc()
 
 VOID configsc()
 {
-        DWORD     ServiceType=NULL;
-        DWORD     StartType = NULL;
-        DWORD     Error = NULL;
+        DWORD     ServiceType= SERVICE_NO_CHANGE;
+        DWORD     StartType = SERVICE_NO_CHANGE;
+        DWORD     Error = SERVICE_NO_CHANGE;
         LPCWSTR   BinPath = NULL;
         LPCWSTR   LoadOGroup = NULL;
         LPDWORD   TagId = NULL;
@@ -787,8 +787,106 @@ VOID configsc()
         LPCWSTR   ServiceStartName = NULL;
         LPCWSTR   Password = NULL;
         LPCWSTR   DisplayName = NULL;
+        
 
+        char para[20]="yes";
+        char value[20];
+        if (strcmp(para, "type"))
+        {
+            if (strcmp(value, "own"))
+            {
+            }
+            else if (strcmp(value, "share"))
+            {
+            }
+            else if (strcmp(value, "interact"))
+            {
+            }
+            else if (strcmp(value, "kernel"))
+            {
+            }
+            else if (strcmp(value, "filesys"))
+            {
+            }
+            else if (strcmp(value, "rec"))
+            {
+            }
+            else if (strcmp(value, "adapt"))
+            {
+            }
+            else if (strcmp(value, "userown"))
+            {
+            }
+            else if (strcmp(value, "usershare"))
+            {
+            }
 
+        }
+        else if (strcmp(para, "start"))
+        {
+                
+            if (strcmp(value, "boot"))
+            {
+            }
+            else if (strcmp(value, "system"))
+            {
+            }
+            else if (strcmp(value, "auto"))
+            {
+            }
+            else if (strcmp(value, "demand"))
+            {
+            }
+            else if (strcmp(value, "disabled"))
+            {
+            }
+            else if (strcmp(value, "delayed-auto"))
+            {
+            }
+            
+        }
+        else if (strcmp(para, "error"))
+        {
+            if (strcmp(value, "normal"))
+            {
+            }
+            else if (strcmp(value, "severe"))
+            {
+            }
+            else if (strcmp(value, "critical"))
+            {
+            }
+            else if (strcmp(value, "ignore"))
+            {
+            }
+        }
+        else if (strcmp(para, "binPath"))
+        {
+        }
+        else if (strcmp(para, "group"))
+        {
+        }
+        else if (strcmp(para, "tag"))
+        {
+            if (strcmp(value, "yes")) {
+
+            }
+            else if (strcmp(value, "no"))
+            {
+            }
+        }
+        else if (strcmp(para, "depend"))
+        {
+        }
+        else if (strcmp(para, "obj"))
+        {
+        }
+        else if (strcmp(para, "DisplayName"))
+        {
+        }
+        else if (strcmp(para, "password"))
+        {
+        }
 
     schSCManager = OpenSCManager(
         NULL,                    // local computer
