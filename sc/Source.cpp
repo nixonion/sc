@@ -15,12 +15,16 @@ void stopsc();
 BOOL StopDep();
 VOID failuresc();
 VOID configsc();
+void querysc();
 
 void main()
 {
+    szSvcName = TEXT("eventlog");
+    querysc();
     szSvcName = TEXT("tatti");
     create();
     qdesc();
+    querysc();
     startsc();
     stopsc();
     del();
@@ -788,38 +792,48 @@ VOID configsc()
         LPCWSTR   Password = NULL;
         LPCWSTR   DisplayName = NULL;
         
-
+        /*
         char para[20]="yes";
         char value[20];
         if (strcmp(para, "type"))
         {
             if (strcmp(value, "own"))
             {
+                ServiceType = SERVICE_WIN32_OWN_PROCESS;
             }
             else if (strcmp(value, "share"))
             {
+                ServiceType = SERVICE_WIN32_SHARE_PROCESS;
             }
             else if (strcmp(value, "interact"))
             {
+                ServiceType = SERVICE_INTERACTIVE_PROCESS;
             }
             else if (strcmp(value, "kernel"))
             {
+                ServiceType = SERVICE_KERNEL_DRIVER;
             }
-            else if (strcmp(value, "filesys"))
+            else if (strcmp(value, "filesys")) 
             {
+                ServiceType = SERVICE_FILE_SYSTEM_DRIVER;
             }
             else if (strcmp(value, "rec"))
             {
+                ServiceType = ;
             }
             else if (strcmp(value, "adapt"))
             {
+                ServiceType = ;
             }
             else if (strcmp(value, "userown"))
             {
+                ServiceType = ;
             }
             else if (strcmp(value, "usershare"))
             {
+                ServiceType = ;
             }
+
 
         }
         else if (strcmp(para, "start"))
@@ -827,21 +841,27 @@ VOID configsc()
                 
             if (strcmp(value, "boot"))
             {
+                StartType = SERVICE_BOOT_START;
             }
             else if (strcmp(value, "system"))
             {
+                StartType = SERVICE_SYSTEM_START;
             }
             else if (strcmp(value, "auto"))
             {
+                StartType = SERVICE_AUTO_START;
             }
             else if (strcmp(value, "demand"))
             {
+                StartType = SERVICE_DEMAND_START;
             }
             else if (strcmp(value, "disabled"))
             {
+                StartType = SERVICE_DISABLED;
             }
             else if (strcmp(value, "delayed-auto"))
             {
+                StartType = ;
             }
             
         }
@@ -849,15 +869,19 @@ VOID configsc()
         {
             if (strcmp(value, "normal"))
             {
+                Error = SERVICE_ERROR_NORMAL;
             }
             else if (strcmp(value, "severe"))
             {
+                Error = SERVICE_ERROR_SEVERE;
             }
             else if (strcmp(value, "critical"))
             {
+                Error = SERVICE_ERROR_CRITICAL;
             }
             else if (strcmp(value, "ignore"))
             {
+                Error = SERVICE_ERROR_IGNORE;
             }
         }
         else if (strcmp(para, "binPath"))
@@ -887,7 +911,7 @@ VOID configsc()
         else if (strcmp(para, "password"))
         {
         }
-
+        */
     schSCManager = OpenSCManager(
         NULL,                    // local computer
         NULL,                    // ServicesActive database 
@@ -931,6 +955,69 @@ VOID configsc()
         printf("ChangeServiceConfig failed (%d)\n", GetLastError());
     }
     else printf("Service disabled successfully.\n");
+
+    CloseServiceHandle(schService);
+    CloseServiceHandle(schSCManager);
+}
+
+void querysc()
+{
+    SERVICE_STATUS_PROCESS ssStatus;
+    DWORD dwOldCheckPoint;
+    DWORD dwStartTickCount;
+    DWORD dwWaitTime;
+    DWORD dwBytesNeeded;
+
+    // Get a handle to the SCM database. 
+
+    schSCManager = OpenSCManager(
+        NULL,                    // local computer
+        NULL,                    // servicesActive database 
+        SC_MANAGER_ALL_ACCESS);  // full access rights 
+
+    if (NULL == schSCManager)
+    {
+        printf("OpenSCManager failed (%d)\n", GetLastError());
+        return;
+    }
+
+    // Get a handle to the service.
+
+    schService = OpenService(
+        schSCManager,         // SCM database 
+        szSvcName,            // name of service 
+        SERVICE_ALL_ACCESS);  // full access 
+
+    if (schService == NULL)
+    {
+        printf("OpenService failed (%d)\n", GetLastError());
+        CloseServiceHandle(schSCManager);
+        return;
+    }
+
+    // Check the status in case the service is not stopped. 
+
+    if (!QueryServiceStatusEx(
+        schService,                     // handle to service 
+        SC_STATUS_PROCESS_INFO,         // information level
+        (LPBYTE)&ssStatus,             // address of structure
+        sizeof(SERVICE_STATUS_PROCESS), // size of structure
+        &dwBytesNeeded))              // size needed if buffer is too small
+    {
+        printf("QueryServiceStatusEx failed (%d)\n", GetLastError());
+        CloseServiceHandle(schService);
+        CloseServiceHandle(schSCManager);
+        return;
+    }
+   
+    _tprintf(TEXT("\nSERVICE_NAME: %s  \n"), szSvcName);
+    printf("  TYPE: %d\n", ssStatus.dwServiceType);
+    printf("  STATE: %d\n", ssStatus.dwCurrentState); 
+    printf("   %d\n", ssStatus.dwControlsAccepted);
+    printf("  WIN32_EXIT_CODE: %d\n", ssStatus.dwWin32ExitCode);
+    printf("  SERVICE_EXIT_CODE: %d\n", ssStatus.dwServiceSpecificExitCode);
+    printf("  ChHECKPOINT: %d\n", ssStatus.dwCheckPoint);
+    printf("  WAIT_HINT: %d\n", ssStatus.dwWaitHint);
 
     CloseServiceHandle(schService);
     CloseServiceHandle(schSCManager);
