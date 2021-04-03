@@ -7,6 +7,17 @@ SC_HANDLE schSCManager;
 SC_HANDLE schService;
 LPCWSTR szSvcName;
 
+TCHAR type[50];
+TCHAR state[50];
+TCHAR start[50];
+TCHAR error[50];
+TCHAR binpath[100];
+TCHAR displayname[50];
+TCHAR reset[50];
+TCHAR reboot[50];
+TCHAR action[50];
+TCHAR command[50];
+
 void create();
 void del();
 void qdesc();
@@ -18,9 +29,75 @@ VOID configsc();
 void querysc();
 void queryall();
 
-void main()
+void main(int argc, TCHAR* argv[])
 {
-    queryall();
+    //printf("tatti");
+    printf("%s",argv[1]);
+    if (argc < 2)
+    {
+        printf("ERROR:\tIncorrect number of arguments\n\n");
+        //DisplayUsage();
+        //return;
+    }
+    if (lstrcmpi(argv[1], TEXT("t")) == 0)
+    {
+        //SvcInstall();
+        //return;
+    }
+    if (lstrcmpi(argv[1], TEXT("query")) == 0)
+    {
+        //SvcInstall();
+        //return;
+    }
+    if (lstrcmpi(argv[1], TEXT("create")) == 0)
+    {
+        //SvcInstall();
+        //return;
+    }
+    if (lstrcmpi(argv[1], TEXT("qdescription")) == 0)
+    {
+        printf("tatti");
+        if (argc == 3)
+        {
+            printf("tatti");
+            szSvcName = argv[2];
+            qdesc();
+        }
+        return;
+    }
+    if (lstrcmpi(argv[1], TEXT("create")) == 0)
+    {
+        //SvcInstall();
+        //return;
+    }
+    if (lstrcmpi(argv[1], TEXT("start")) == 0)
+    {
+        //SvcInstall();
+        //return;
+    }
+    if (lstrcmpi(argv[1], TEXT("stop")) == 0)
+    {
+        //SvcInstall();
+        //return;
+    }
+    if (lstrcmpi(argv[1], TEXT("delete")) == 0)
+    {
+        //SvcInstall();
+        //return;
+    }
+    if (lstrcmpi(argv[1], TEXT("config")) == 0)
+    {
+        //SvcInstall();
+        //return;
+    }
+    if (lstrcmpi(argv[1], TEXT("failure")) == 0)
+    {
+        //SvcInstall();
+        //return;
+    }
+    
+
+    //queryall();
     /*szSvcName = TEXT("eventlog");
     querysc();
     szSvcName = TEXT("tatti");
@@ -160,7 +237,7 @@ void qdesc()
 
     schService = OpenService(
         schSCManager,          // SCM database 
-        L"tatti",             // name of service 
+        szSvcName,             // name of service 
         SERVICE_QUERY_CONFIG); // need query config access 
 
     if (schService == NULL)
@@ -819,22 +896,7 @@ VOID configsc()
             {
                 ServiceType = SERVICE_FILE_SYSTEM_DRIVER;
             }
-            else if (strcmp(value, "rec"))
-            {
-                ServiceType = ;
-            }
-            else if (strcmp(value, "adapt"))
-            {
-                ServiceType = ;
-            }
-            else if (strcmp(value, "userown"))
-            {
-                ServiceType = ;
-            }
-            else if (strcmp(value, "usershare"))
-            {
-                ServiceType = ;
-            }
+            
 
 
         }
@@ -889,24 +951,7 @@ VOID configsc()
         else if (strcmp(para, "binPath"))
         {
         }
-        else if (strcmp(para, "group"))
-        {
-        }
-        else if (strcmp(para, "tag"))
-        {
-            if (strcmp(value, "yes")) {
-
-            }
-            else if (strcmp(value, "no"))
-            {
-            }
-        }
-        else if (strcmp(para, "depend"))
-        {
-        }
-        else if (strcmp(para, "obj"))
-        {
-        }
+        
         else if (strcmp(para, "DisplayName"))
         {
         }
@@ -1083,9 +1128,9 @@ void queryall()
         {
             dwServiceState = SERVICE_STATE_ALL;
         }
-        
-    
 
+
+    }
     schSCManager = OpenSCManager(
         NULL,                    // local computer
         NULL,                    // servicesActive database 
