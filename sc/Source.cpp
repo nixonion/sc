@@ -21,7 +21,7 @@ void queryall();
 void main()
 {
     queryall();
-    szSvcName = TEXT("eventlog");
+    /*szSvcName = TEXT("eventlog");
     querysc();
     szSvcName = TEXT("tatti");
     create();
@@ -29,7 +29,7 @@ void main()
     querysc();
     startsc();
     stopsc();
-    del();
+    del();*/
 }
 
 void create()
@@ -1031,7 +1031,8 @@ void querysc()
 
 void queryall()
 {
-
+    DWORD        dwServiceType= SERVICE_WIN32;
+    DWORD        dwServiceState= SERVICE_STATE_ALL;
     schSCManager = OpenSCManager(
         NULL,                    // local computer
         NULL,                    // servicesActive database 
@@ -1049,8 +1050,8 @@ void queryall()
     BOOL status = EnumServicesStatusEx(
         schSCManager,
         SC_ENUM_PROCESS_INFO,
-        SERVICE_WIN32,
-        SERVICE_STATE_ALL,
+        dwServiceType,
+        dwServiceState,
         NULL,
         0,
         &bytesNeeded,
@@ -1065,8 +1066,8 @@ void queryall()
     status = EnumServicesStatusEx(
         schSCManager,
         SC_ENUM_PROCESS_INFO,
-        SERVICE_WIN32,
-        SERVICE_STATE_ALL,
+        dwServiceType,
+        dwServiceState,
         lpBytes,
         bytesNeeded,
         &bytesNeeded,
@@ -1078,55 +1079,21 @@ void queryall()
     int i = 0;
     int j = 0;
     ENUM_SERVICE_STATUS_PROCESS* services = (ENUM_SERVICE_STATUS_PROCESS*)lpBytes;
-    DWORD dwBytesNeeded;
-    SERVICE_STATUS_PROCESS ssStatus;
-    char hexString[20];
+   
+    CloseServiceHandle(schSCManager);
+
     for (i = 0; i < servicesNum; i++)
     {
         //printf("%s\n", services[i].lpServiceName);
-        _tprintf(TEXT("\nSERVICE_NAME: %s  \n"), services[i].lpServiceName);
-        /*
-        schService = OpenService(
-            schSCManager,         // SCM database 
-            services[i].lpServiceName,            // name of service 
-            SERVICE_ALL_ACCESS);  // full access 
-
-        if (schService == NULL)
-        {
-            printf("OpenService failed (%d)\n", GetLastError());
-            CloseServiceHandle(schSCManager);
-            return;
-        }
-        CloseServiceHandle(schService);
-        
-        // Check the status in case the service is not stopped. 
-
-        if (!QueryServiceStatusEx(
-            schService,                     // handle to service 
-            SC_STATUS_PROCESS_INFO,         // information level
-            (LPBYTE)&ssStatus,             // address of structure
-            sizeof(SERVICE_STATUS_PROCESS), // size of structure
-            &dwBytesNeeded))              // size needed if buffer is too small
-        {
-            printf("QueryServiceStatusEx failed (%d)\n", GetLastError());
-            CloseServiceHandle(schService);
-            CloseServiceHandle(schSCManager);
-            return;
-        }
-        memset(hexString, '\0', sizeof(hexString));
+        printf("%d", i);
         _tprintf(TEXT("\nSERVICE_NAME: %s  \n"), services[i].lpServiceName);
         
-        _itoa_s(ssStatus.dwServiceType, hexString, 16);
-        printf("  TYPE: %s\n", hexString);
-        printf("  STATE: %d\n", ssStatus.dwCurrentState);
-        printf("   %d\n", ssStatus.dwControlsAccepted);
-        printf("  WIN32_EXIT_CODE: %d\n", ssStatus.dwWin32ExitCode);
-        printf("  SERVICE_EXIT_CODE: %d\n", ssStatus.dwServiceSpecificExitCode);
-        printf("  ChHECKPOINT: %d\n", ssStatus.dwCheckPoint);
-        printf("  WAIT_HINT: %d\n", ssStatus.dwWaitHint);
-        CloseServiceHandle(schService);*/
+        szSvcName = services[i].lpServiceName;
+       // _tprintf(TEXT("\nSERVICE_NAME: %s  \n"), szSvcName);
+
+        querysc();
+        
     }
 
-    CloseServiceHandle(schService);
-    CloseServiceHandle(schSCManager);
+    
 }
