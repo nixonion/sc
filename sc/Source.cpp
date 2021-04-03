@@ -1033,6 +1033,59 @@ void queryall()
 {
     DWORD        dwServiceType= SERVICE_WIN32;
     DWORD        dwServiceState= SERVICE_STATE_ALL;
+
+    char para[20] = "yes";
+    char value[20];
+    if (strcmp(para, "type"))
+    {
+        if (strcmp(value, "driver"))
+        {
+            dwServiceType = SERVICE_DRIVER;
+        }
+        else if (strcmp(value, "service"))
+        {
+            dwServiceType = SERVICE_WIN32;
+        }
+        else if (strcmp(value, "all"))
+        {
+            dwServiceType = SERVICE_DRIVER | SERVICE_WIN32;
+        }
+        else if (strcmp(value, "own"))
+        {
+            dwServiceType = SERVICE_WIN32_OWN_PROCESS;
+        }
+        else if (strcmp(value, "share"))
+        {
+            dwServiceType = SERVICE_WIN32_SHARE_PROCESS;
+        }
+        else if (strcmp(value, "kernel"))
+        {
+            dwServiceType = SERVICE_KERNEL_DRIVER;
+        }
+        else if (strcmp(value, "filesys"))
+        {
+            dwServiceType = SERVICE_FILE_SYSTEM_DRIVER;
+        }
+
+    }
+    else if (strcmp(para, "state"))
+    {
+
+        if (strcmp(value, "active"))
+        {
+            dwServiceState = SERVICE_ACTIVE;
+        }
+        else if (strcmp(value, "inactive"))
+        {
+            dwServiceState = SERVICE_INACTIVE;
+        }
+        else if (strcmp(value, "all"))
+        {
+            dwServiceState = SERVICE_STATE_ALL;
+        }
+        
+    
+
     schSCManager = OpenSCManager(
         NULL,                    // local computer
         NULL,                    // servicesActive database 
