@@ -1085,7 +1085,7 @@ void queryall()
     {
         //printf("%s\n", services[i].lpServiceName);
         _tprintf(TEXT("\nSERVICE_NAME: %s  \n"), services[i].lpServiceName);
-        /*
+        
         schService = OpenService(
             schSCManager,         // SCM database 
             services[i].lpServiceName,            // name of service 
@@ -1098,7 +1098,7 @@ void queryall()
             return;
         }
         CloseServiceHandle(schService);
-        
+        /*
         // Check the status in case the service is not stopped. 
 
         if (!QueryServiceStatusEx(
