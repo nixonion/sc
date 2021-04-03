@@ -7,8 +7,8 @@ SC_HANDLE schSCManager;
 SC_HANDLE schService;
 LPCWSTR szSvcName;
 
-TCHAR type[50];
-TCHAR state[50];
+CHAR type[50];
+CHAR state[50];
 TCHAR start[50];
 TCHAR error[50];
 TCHAR binpath[100];
@@ -29,68 +29,105 @@ VOID configsc();
 void querysc();
 void queryall();
 
-void main(int argc, TCHAR* argv[])
+void main(int argc, CHAR* argv[])
 {
-    //printf("tatti");
-    printf("%s",argv[1]);
+    
+    //printf("%s %s",argv[1],argv[2]);
     if (argc < 2)
     {
         printf("ERROR:\tIncorrect number of arguments\n\n");
-        //DisplayUsage();
-        //return;
+        queryall();
+        return;
+        
     }
-    if (lstrcmpi(argv[1], TEXT("t")) == 0)
+
+    wchar_t wtext[20];
+    size_t outSize;
+    int i;
+    
+    
+    if (strcmp(argv[1], "query") == 0)
+    {
+        if (argc == 2)
+        {
+            queryall();
+        }
+        else if (argc == 3)
+        {
+            mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
+            szSvcName = wtext;
+            querysc();
+        }
+        else 
+        {
+            for ( i = 2; i < argc; i = i + 2)
+            {
+                if (strcmp(argv[2], "state=") == 0)
+                {
+                    strcpy_s(state,sizeof(state), argv[3]);
+                }
+                if (strcmp(argv[2], "type=") == 0)
+                {
+                    strcpy_s(type,sizeof(type), argv[3]);
+                }
+            }
+            queryall();
+        }
+        return;
+        
+    }
+    if (strcmp(argv[1], "create") == 0)
     {
         //SvcInstall();
         //return;
     }
-    if (lstrcmpi(argv[1], TEXT("query")) == 0)
+    if (strcmp(argv[1], "qdescription") == 0)
     {
-        //SvcInstall();
-        //return;
-    }
-    if (lstrcmpi(argv[1], TEXT("create")) == 0)
-    {
-        //SvcInstall();
-        //return;
-    }
-    if (lstrcmpi(argv[1], TEXT("qdescription")) == 0)
-    {
-        printf("tatti");
         if (argc == 3)
         {
-            printf("tatti");
-            szSvcName = argv[2];
+            mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
+            szSvcName = wtext;
             qdesc();
         }
         return;
     }
-    if (lstrcmpi(argv[1], TEXT("create")) == 0)
+    
+    if (strcmp(argv[1], "start") == 0)
+    {
+        if (argc == 3)
+        {
+            mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
+            szSvcName = wtext;
+            startsc();
+        }
+        return;
+    }
+    if (strcmp(argv[1], "stop") == 0)
+    {
+        if (argc == 3)
+        {
+            mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
+            szSvcName = wtext;
+            stopsc();
+        }
+        return;
+    }
+    if (strcmp(argv[1], "delete") == 0)
+    {
+        if (argc == 3)
+        {
+            mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
+            szSvcName = wtext;
+            del();
+        }
+        return;
+    }
+    if (strcmp(argv[1], "config") == 0)
     {
         //SvcInstall();
         //return;
     }
-    if (lstrcmpi(argv[1], TEXT("start")) == 0)
-    {
-        //SvcInstall();
-        //return;
-    }
-    if (lstrcmpi(argv[1], TEXT("stop")) == 0)
-    {
-        //SvcInstall();
-        //return;
-    }
-    if (lstrcmpi(argv[1], TEXT("delete")) == 0)
-    {
-        //SvcInstall();
-        //return;
-    }
-    if (lstrcmpi(argv[1], TEXT("config")) == 0)
-    {
-        //SvcInstall();
-        //return;
-    }
-    if (lstrcmpi(argv[1], TEXT("failure")) == 0)
+    if (strcmp(argv[1], "failure") == 0)
     {
         //SvcInstall();
         //return;
@@ -311,7 +348,7 @@ void qdesc()
 
     // Print the configuration information.
     
-    _tprintf(TEXT("\nSERVICE_NAME: %s  \n"), L"Tatti");
+    _tprintf(TEXT("\n\nSERVICE_NAME: %s  \n"), szSvcName);
     _tprintf(TEXT("BINARY_PATH: %s\n"), lpsc->lpBinaryPathName);
     _tprintf(TEXT("DESCRIPTION: "));
 
@@ -1076,61 +1113,58 @@ void querysc()
 
 void queryall()
 {
-    DWORD        dwServiceType= SERVICE_WIN32;
+    DWORD        dwServiceType= SERVICE_DRIVER | SERVICE_WIN32;
     DWORD        dwServiceState= SERVICE_STATE_ALL;
 
-    char para[20] = "yes";
-    char value[20];
-    if (strcmp(para, "type"))
-    {
-        if (strcmp(value, "driver"))
+    //char para[20] = "yes";
+    //char value[20];
+    
+        if (strcmp(type, "driver"))
         {
             dwServiceType = SERVICE_DRIVER;
         }
-        else if (strcmp(value, "service"))
+        else if (strcmp(type, "service"))
         {
             dwServiceType = SERVICE_WIN32;
         }
-        else if (strcmp(value, "all"))
+        else if (strcmp(type, "all"))
         {
             dwServiceType = SERVICE_DRIVER | SERVICE_WIN32;
         }
-        else if (strcmp(value, "own"))
+        else if (strcmp(type, "own"))
         {
             dwServiceType = SERVICE_WIN32_OWN_PROCESS;
         }
-        else if (strcmp(value, "share"))
+        else if (strcmp(type, "share"))
         {
             dwServiceType = SERVICE_WIN32_SHARE_PROCESS;
         }
-        else if (strcmp(value, "kernel"))
+        else if (strcmp(type, "kernel"))
         {
             dwServiceType = SERVICE_KERNEL_DRIVER;
         }
-        else if (strcmp(value, "filesys"))
+        else if (strcmp(type, "filesys"))
         {
             dwServiceType = SERVICE_FILE_SYSTEM_DRIVER;
         }
 
-    }
-    else if (strcmp(para, "state"))
-    {
+    
 
-        if (strcmp(value, "active"))
+        if (strcmp(state, "active"))
         {
             dwServiceState = SERVICE_ACTIVE;
         }
-        else if (strcmp(value, "inactive"))
+        else if (strcmp(state, "inactive"))
         {
             dwServiceState = SERVICE_INACTIVE;
         }
-        else if (strcmp(value, "all"))
+        else if (strcmp(state, "all"))
         {
             dwServiceState = SERVICE_STATE_ALL;
         }
 
 
-    }
+    
     schSCManager = OpenSCManager(
         NULL,                    // local computer
         NULL,                    // servicesActive database 
