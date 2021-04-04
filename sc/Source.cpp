@@ -11,7 +11,7 @@ CHAR type[50]="";
 CHAR state[50]="";
 TCHAR start[50];
 TCHAR error[50];
-TCHAR binpath[100];
+LPCWSTR binpath;
 TCHAR displayname[50];
 TCHAR reset[50];
 TCHAR reboot[50];
@@ -43,6 +43,16 @@ void main(int argc, CHAR* argv[])
 
     wchar_t wtext[20];
     size_t outSize;
+
+    wchar_t wtext1[20];
+    size_t outSize1;
+
+    wchar_t wtext2[20];
+    size_t outSize2;
+
+    wchar_t wtext3[20];
+    size_t outSize3;
+
     int i;
     
     
@@ -84,6 +94,43 @@ void main(int argc, CHAR* argv[])
     }
     if (strcmp(argv[1], "create") == 0)
     {
+        if (argc <= 4)
+        {
+            return;
+        }
+        else if (strcmpi(argv[3], "binPath=") != 0 )
+        {
+                return;
+        }
+        else
+        {
+            mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
+            szSvcName = wtext;
+            
+            mbstowcs_s(&outSize1, wtext1, strlen(argv[4]) + 1, argv[4], strlen(argv[2]));
+            binpath = wtext1;
+
+            for (i = 5; i < argc; i = i + 2)
+            {
+
+
+                if (strcmp(argv[i], "start=") == 0)
+                {
+                    //printf("state works\n", type);
+                    strcpy_s(state, sizeof(start), argv[i + 1]);
+                }
+                else if (strcmp(argv[i], "type=") == 0)
+                {
+                    strcpy_s(type, sizeof(type), argv[i + 1]);
+                }
+                else if (strcmp(argv[i], "type=") == 0)
+                {
+                    strcpy_s(type, sizeof(type), argv[i + 1]);
+                }
+            }
+        }
+        
+
         //SvcInstall();
         //return;
     }
@@ -189,7 +236,7 @@ void create()
         SERVICE_WIN32_OWN_PROCESS, // service type 
         SERVICE_DEMAND_START,      // start type 
         SERVICE_ERROR_NORMAL,      // error control type 
-        L"C:\\Windows\\System32\\notepad.exe",                    // path to service's binary 
+        binpath,                    //L"C:\\Windows\\System32\\notepad.exe",          path to service's binary 
         NULL,                      // no load ordering group 
         NULL,                      // no tag identifier 
         NULL,                      // no dependencies 
