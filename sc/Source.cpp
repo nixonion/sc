@@ -9,10 +9,11 @@ LPCWSTR szSvcName;
 
 CHAR type[50]="";
 CHAR state[50]="";
-TCHAR start[50];
-TCHAR error[50];
-LPCWSTR binpath;
-TCHAR displayname[50];
+CHAR start[50];
+CHAR error[50];
+LPCWSTR binpath=NULL;
+LPCWSTR password=NULL;
+LPCWSTR displayname=NULL;
 TCHAR reset[50];
 TCHAR reboot[50];
 TCHAR action[50];
@@ -32,25 +33,25 @@ void queryall();
 void main(int argc, CHAR* argv[])
 {
     
-    //printf("%s %s",argv[1],argv[2]);
+    
     if (argc < 2)
     {
         printf("ERROR:\tIncorrect number of arguments\n\n");
-        //queryall();
+        
         return;
         
     }
 
-    wchar_t wtext[20];
+    wchar_t wtext[50];
     size_t outSize;
 
-    wchar_t wtext1[20];
+    wchar_t wtext1[50];
     size_t outSize1;
 
-    wchar_t wtext2[20];
+    wchar_t wtext2[50];
     size_t outSize2;
 
-    wchar_t wtext3[20];
+    wchar_t wtext3[50];
     size_t outSize3;
 
     int i;
@@ -78,7 +79,7 @@ void main(int argc, CHAR* argv[])
 
                 if (strcmp(argv[i], "state=") == 0)
                 {
-                    printf("state works\n", type);
+                    
                     strcpy_s(state,sizeof(state), argv[i+1]);
                 }
                 else if (strcmp(argv[i], "type=") == 0)
@@ -98,7 +99,7 @@ void main(int argc, CHAR* argv[])
         {
             return;
         }
-        else if (strcmpi(argv[3], "binPath=") != 0 )
+        else if (_strcmpi(argv[3], "binPath=") != 0 )
         {
                 return;
         }
@@ -115,24 +116,34 @@ void main(int argc, CHAR* argv[])
 
 
                 if (strcmp(argv[i], "start=") == 0)
-                {
-                    //printf("state works\n", type);
-                    strcpy_s(state, sizeof(start), argv[i + 1]);
+                {       
+                    strcpy_s(start, sizeof(start), argv[i + 1]);
                 }
                 else if (strcmp(argv[i], "type=") == 0)
                 {
                     strcpy_s(type, sizeof(type), argv[i + 1]);
                 }
-                else if (strcmp(argv[i], "type=") == 0)
+                else if (strcmp(argv[i], "error=") == 0)
                 {
-                    strcpy_s(type, sizeof(type), argv[i + 1]);
+                    strcpy_s(error, sizeof(error), argv[i + 1]);
+                }
+                else if (_strcmpi(argv[i], "DisplayName=") == 0)
+                {
+                    mbstowcs_s(&outSize2, wtext2, strlen(argv[i+1]) + 1, argv[i+1], strlen(argv[i+1]));
+                    displayname = wtext2;
+                }
+                else if (_strcmpi(argv[i], "password=") == 0)
+                {
+                    mbstowcs_s(&outSize3, wtext3, strlen(argv[i+1]) + 1, argv[i+1], strlen(argv[i+1]));
+                    password = wtext3;
                 }
             }
+            create();
+            return;
         }
         
 
-        //SvcInstall();
-        //return;
+        
     }
     if (strcmp(argv[1], "qdescription") == 0)
     {
@@ -187,16 +198,7 @@ void main(int argc, CHAR* argv[])
     }
     
 
-    //queryall();
-    /*szSvcName = TEXT("eventlog");
-    querysc();
-    szSvcName = TEXT("tatti");
-    create();
-    qdesc();
-    querysc();
-    startsc();
-    stopsc();
-    del();*/
+    
 }
 
 void create()
@@ -205,14 +207,20 @@ void create()
 
     SC_HANDLE schSCManager;
     SC_HANDLE schService;
-    WCHAR szPath[100];
+    DWORD     dwServiceType= SERVICE_WIN32_OWN_PROCESS;
+    DWORD     dwStartType= SERVICE_DEMAND_START;
+    DWORD     dwErrorControl= SERVICE_ERROR_NORMAL;
+    //WCHAR lpwText = new WCHAR[49 + 1];
+   /*
+    LPWSTR szPath=NULL;
+    wcscpy_s(szPath ,100 ,binpath);
     //szPath = TEXT("C:\\Windows\\System32\\notepad.exe");
     if (!GetModuleFileName(NULL, szPath, 100))
     {
         printf("Cannot install service (%d)\n", GetLastError());
         return;
     }
-
+    */
     // Get a handle to the SCM database. 
 
     schSCManager = OpenSCManager(
@@ -226,22 +234,82 @@ void create()
         return;
     }
 
+    if (strcmp(type, "own") == 0)
+    {
+        dwServiceType = SERVICE_WIN32_OWN_PROCESS;
+    }
+    else if (strcmp(type, "share") == 0)
+    {
+        dwServiceType = SERVICE_WIN32_SHARE_PROCESS;
+    }
+    else if (strcmp(type, "kernel") == 0)
+    {
+        dwServiceType = SERVICE_KERNEL_DRIVER;
+    }
+    else if (strcmp(type, "filesys") == 0)
+    {
+        dwServiceType = SERVICE_FILE_SYSTEM_DRIVER;
+    }
+    else if (strcmp(type, "rec") == 0)
+    {
+        dwServiceType = SERVICE_RECOGNIZER_DRIVER;
+    }
+   
+    if (strcmp(start, "boot") == 0)
+    {
+        dwStartType = SERVICE_BOOT_START;
+    }
+    else if (strcmp(start, "system") == 0)
+    {
+        dwStartType = SERVICE_SYSTEM_START;
+    }
+    else if (strcmp(start, "auto") == 0)
+    {
+        dwStartType = SERVICE_AUTO_START;
+    }
+    else if (strcmp(start, "demand") == 0)
+    {
+        dwStartType = SERVICE_DEMAND_START;
+    }
+    else if (strcmp(start, "disabled") == 0)
+    {
+        dwStartType = SERVICE_DISABLED;
+    }
+    
+    if (strcmp(error, "normal") == 0)
+    {
+        dwErrorControl = SERVICE_ERROR_NORMAL;
+    }
+    else if (strcmp(error, "severe") == 0)
+    {
+        dwErrorControl = SERVICE_ERROR_SEVERE;
+    }
+    else if (strcmp(error, "critical") == 0)
+    {
+        dwErrorControl = SERVICE_ERROR_CRITICAL;
+    }
+    else if (strcmp(error, "ignore") == 0)
+    {
+        dwErrorControl = SERVICE_ERROR_IGNORE;
+    }
+
+
     // Create the service
 
     schService = CreateService(
-        schSCManager,              // SCM database 
-        L"TATTI",                   // name of service 
-        L"TATTI",                   // service name to display 
-        SERVICE_ALL_ACCESS,        // desired access 
-        SERVICE_WIN32_OWN_PROCESS, // service type 
-        SERVICE_DEMAND_START,      // start type 
-        SERVICE_ERROR_NORMAL,      // error control type 
+        schSCManager,               // SCM database 
+        szSvcName,                  // name of service 
+        displayname,                // service name to display 
+        SERVICE_ALL_ACCESS,         // desired access 
+        dwServiceType,              // service type 
+        dwStartType,                // start type 
+        dwErrorControl,             // error control type 
         binpath,                    //L"C:\\Windows\\System32\\notepad.exe",          path to service's binary 
-        NULL,                      // no load ordering group 
-        NULL,                      // no tag identifier 
-        NULL,                      // no dependencies 
-        NULL,                      // LocalSystem account 
-        NULL);                     // no password 
+        NULL,                       // no load ordering group 
+        NULL,                       // no tag identifier 
+        NULL,                       // no dependencies 
+        NULL,                       // LocalSystem account 
+        password);                  //password 
 
     if (schService == NULL)
     {
