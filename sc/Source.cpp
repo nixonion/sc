@@ -7,8 +7,8 @@ SC_HANDLE schSCManager;
 SC_HANDLE schService;
 LPCWSTR szSvcName;
 
-CHAR type[50];
-CHAR state[50];
+CHAR type[50]="";
+CHAR state[50]="";
 TCHAR start[50];
 TCHAR error[50];
 TCHAR binpath[100];
@@ -36,7 +36,7 @@ void main(int argc, CHAR* argv[])
     if (argc < 2)
     {
         printf("ERROR:\tIncorrect number of arguments\n\n");
-        queryall();
+        //queryall();
         return;
         
     }
@@ -60,17 +60,23 @@ void main(int argc, CHAR* argv[])
         }
         else 
         {
+            
+            
             for ( i = 2; i < argc; i = i + 2)
             {
-                if (strcmp(argv[2], "state=") == 0)
+                
+
+                if (strcmp(argv[i], "state=") == 0)
                 {
-                    strcpy_s(state,sizeof(state), argv[3]);
+                    printf("state works\n", type);
+                    strcpy_s(state,sizeof(state), argv[i+1]);
                 }
-                if (strcmp(argv[2], "type=") == 0)
+                else if (strcmp(argv[i], "type=") == 0)
                 {
-                    strcpy_s(type,sizeof(type), argv[3]);
+                    strcpy_s(type,sizeof(type), argv[i+1]);
                 }
             }
+            
             queryall();
         }
         return;
@@ -1095,11 +1101,23 @@ void querysc()
     }
    
     _tprintf(TEXT("\nSERVICE_NAME: %s  \n"), szSvcName);
-    char hexString[20];
-    _itoa_s(ssStatus.dwServiceType, hexString, 16);
-    printf("  TYPE: %s\n", hexString);
+    DWORD cch = 0;
+    if (!GetServiceDisplayNameW(schSCManager, szSvcName, nullptr, &cch))
+    {
+        if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+        {
+            PWSTR buff = (PWSTR)malloc(++cch * sizeof(WCHAR));
+            if (GetServiceDisplayNameW(schSCManager, szSvcName, buff, &cch))
+            {
+                
+                _tprintf(TEXT("DISPLAY_NAME: %s  \n"), buff);
+            }
+        }
+    }
+    
+    printf("  TYPE: %x\n", ssStatus.dwServiceType);
     printf("  STATE: %d\n", ssStatus.dwCurrentState); 
-    printf("   %d\n", ssStatus.dwControlsAccepted);
+    printf("   %x\n", ssStatus.dwControlsAccepted);
     printf("  WIN32_EXIT_CODE: %d\n", ssStatus.dwWin32ExitCode);
     printf("  SERVICE_EXIT_CODE: %d\n", ssStatus.dwServiceSpecificExitCode);
     printf("  ChHECKPOINT: %d\n", ssStatus.dwCheckPoint);
@@ -1113,58 +1131,59 @@ void querysc()
 
 void queryall()
 {
-    DWORD        dwServiceType= SERVICE_DRIVER | SERVICE_WIN32;
-    DWORD        dwServiceState= SERVICE_STATE_ALL;
+    DWORD        dwServiceType=  SERVICE_WIN32 ;
+    DWORD        dwServiceState= SERVICE_ACTIVE;
 
     //char para[20] = "yes";
     //char value[20];
-    
-        if (strcmp(type, "driver"))
+   
+        if (strcmp(type, "driver")==0)
         {
             dwServiceType = SERVICE_DRIVER;
         }
-        else if (strcmp(type, "service"))
+        else if (strcmp(type, "service") == 0)
         {
             dwServiceType = SERVICE_WIN32;
         }
-        else if (strcmp(type, "all"))
+        else if (strcmp(type, "all") == 0)
         {
-            dwServiceType = SERVICE_DRIVER | SERVICE_WIN32;
+            dwServiceType = SERVICE_DRIVER | SERVICE_WIN32 | SERVICE_KERNEL_DRIVER;
         }
-        else if (strcmp(type, "own"))
+        else if (strcmp(type, "own") == 0)
         {
             dwServiceType = SERVICE_WIN32_OWN_PROCESS;
         }
-        else if (strcmp(type, "share"))
+        else if (strcmp(type, "share") == 0)
         {
             dwServiceType = SERVICE_WIN32_SHARE_PROCESS;
         }
-        else if (strcmp(type, "kernel"))
+        else if (strcmp(type, "kernel") == 0)
         {
             dwServiceType = SERVICE_KERNEL_DRIVER;
         }
-        else if (strcmp(type, "filesys"))
+        else if (strcmp(type, "filesys") == 0)
         {
             dwServiceType = SERVICE_FILE_SYSTEM_DRIVER;
         }
+        
 
     
 
-        if (strcmp(state, "active"))
+        if (strcmp(state, "active") == 0)
         {
             dwServiceState = SERVICE_ACTIVE;
         }
-        else if (strcmp(state, "inactive"))
+        else if (strcmp(state, "inactive") == 0)
         {
             dwServiceState = SERVICE_INACTIVE;
         }
-        else if (strcmp(state, "all"))
+        else if (strcmp(state, "all") == 0)
         {
             dwServiceState = SERVICE_STATE_ALL;
         }
 
-
-    
+       // printf("%x\n", dwServiceType);
+        
     schSCManager = OpenSCManager(
         NULL,                    // local computer
         NULL,                    // servicesActive database 
@@ -1216,15 +1235,8 @@ void queryall()
 
     for (i = 0; i < servicesNum; i++)
     {
-        //printf("%s\n", services[i].lpServiceName);
-        printf("%d", i);
-        _tprintf(TEXT("\nSERVICE_NAME: %s  \n"), services[i].lpServiceName);
-        
         szSvcName = services[i].lpServiceName;
-       // _tprintf(TEXT("\nSERVICE_NAME: %s  \n"), szSvcName);
-
-        querysc();
-        
+        querysc(); 
     }
 
     
