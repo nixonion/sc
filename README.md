@@ -65,6 +65,7 @@ NOTE: The option name includes the equal sign.
 --------------
 
 sc.exe qdescription
+
 DESCRIPTION:
         Retrieves the description string of a service.
 USAGE:
