@@ -5,12 +5,15 @@ Implementation of windows command line program sc that is used for communicating
 How to use:
 
 
-sc.exe\n
-DESCRIPTION:\n
+sc.exe
+
+DESCRIPTION:
+
         SC is a command line program used for communicating with the Service Control Manager and services.
-USAGE:\n
+USAGE:
+
         sc [command] [service name] <option1> <option2>...
-\n
+
         Further help on commands can be obtained by typing: "sc [command]" 
         Commands:
           query-----------Queries the status for a service, or
@@ -25,13 +28,16 @@ USAGE:\n
           
 --------------------
 
-sc.exe failure\n
-DESCRIPTION:\n
-        Changes the actions upon failure\n
-USAGE:\n
-        sc.exe failure [service name] <option1> <option2>...\n
+sc.exe failure
 
-OPTIONS:\n
+DESCRIPTION:
+        Changes the actions upon failure
+        
+USAGE:
+
+        sc.exe failure [service name] <option1> <option2>...
+
+OPTIONS:
         reset=   <Length of period of no failures (in seconds)
                   after which to reset the failure count to 0 (may be INFINITE)>
                   (Must be used in conjunction with actions= )
@@ -43,15 +49,16 @@ OPTIONS:\n
                   (Must be used in conjunction with the reset= option)
 
 --------------------
-sc.exe create\n
-DESCRIPTION:\n
-        Creates a service entry in the registry and Service Database.\n
-USAGE:\n
-        sc.exe create [service name] [binPath= ] <option1> <option2>...\n
+sc.exe create
 
-OPTIONS:\n
+DESCRIPTION:
+        Creates a service entry in the registry and Service Database.
+USAGE:
+        sc.exe create [service name] [binPath= ] <option1> <option2>...
+
+OPTIONS:
 NOTE: The option name includes the equal sign.
-      A space is required between the equal sign and the value.\n
+      A space is required between the equal sign and the value.
                  type= <own|share|interact|kernel|filesys>
                        (default = own)
                  start= <boot|system|auto|demand|disabled>
@@ -64,50 +71,60 @@ NOTE: The option name includes the equal sign.
 
 --------------
 
-sc.exe qdescription\n
+sc.exe qdescription
 
-DESCRIPTION:\n
-        Retrieves the description string of a service.\n
-USAGE:\n
-        sc.exe qdescription [service name] \n
+DESCRIPTION:
+        Retrieves the description string of a service.
+USAGE:
+        sc.exe qdescription [service name] 
 
 
 -----------------
 
-sc.exe delete\n
-DESCRIPTION:\n
-        Deletes a service entry from the registry. If the service is running, or another process has an open handle to the service, the service is simply marked for deletion.\n
-USAGE:\n
+sc.exe delete
+DESCRIPTION:
+
+        Deletes a service entry from the registry. If the service is running, or another process has an open handle to the service, the service is simply marked for deletion.
+        
+USAGE:
+
         sc.exe delete [service name]\n
 
 
 ----------------
 
-sc.exe start\n
-DESCRIPTION:\n
-        Starts a service running.\n
-USAGE:\n
-        sc.exe start [service name] \n
+sc.exe start
+
+DESCRIPTION:
+
+        Starts a service running.
+        
+USAGE:
+
+        sc.exe start [service name] 
 
 -----------------
 
-sc.exe stop\n
-DESCRIPTION:\n
-        Sends a STOP control request to a service.\n
-USAGE:\n
-        sc.exe stop [service name] \n
+sc.exe stop
+
+DESCRIPTION:
+
+        Sends a STOP control request to a service.
+        
+USAGE:
+        sc.exe stop [service name] 
 
 -------------------
 
-sc.exe config\n
-DESCRIPTION:\n
-        Modifies a service entry in the registry and Service Database.\n
-USAGE:\n
-        sc.exe config [service name] <option1> <option2>...\n
+sc.exe config
+DESCRIPTION:
+        Modifies a service entry in the registry and Service Database.
+USAGE:
+        sc.exe config [service name] <option1> <option2>...
 
-OPTIONS:\n
+OPTIONS:
 NOTE: The option name includes the equal sign.
-      A space is required between the equal sign and the value. To remove the dependency, use a single / as dependency value.\n
+      A space is required between the equal sign and the value. To remove the dependency, use a single / as dependency value.
  
      type= <own|share|interact|kernel|filesys>
      start= <boot|system|auto|demand|disabled>
