@@ -5,7 +5,7 @@ Implementation of windows command line program sc that is used for communicating
 How to use:
 
 
-sc.exe
+sc.exe\n
 DESCRIPTION:
         SC is a command line program used for communicating with the Service Control Manager and services.
 USAGE:
