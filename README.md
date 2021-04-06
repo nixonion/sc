@@ -120,6 +120,7 @@ DESCRIPTION:
         Sends a STOP control request to a service.
         
 USAGE:
+
         sc.exe stop [service name] 
 
 -------------------
