@@ -19,25 +19,24 @@ CHAR reboot[100]="";
 CHAR action[100]="";
 CHAR command[100]="";
 
-void create();
-void del();
-void qdesc();
-void startsc();
-void stopsc();
-BOOL StopDep();
-VOID failuresc();
-VOID configsc();
-void querysc();
-void queryall();
+void create(); //sc create 
+void del(); //sc delete 
+void qdesc(); //sc qdescription
+void startsc(); //sc start
+void stopsc(); //sc stop
+BOOL StopDep(); //dependent function for stopsc
+VOID failuresc(); //sc failure
+VOID configsc(); //sc config
+void querysc(); //sc query  servicename
+void queryall(); //sc query
 
 void main(int argc, CHAR* argv[])
 {
     
-    
+    //return if arguments are less
     if (argc < 2)
     {
         printf("ERROR:\tIncorrect number of arguments\n\n");
-        
         return;
         
     }
@@ -61,25 +60,23 @@ void main(int argc, CHAR* argv[])
     {
         if (argc == 2)
         {
+            //query the entire database
             queryall();
         }
         else if (argc == 3)
         {
+            //query specific service
             mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
             szSvcName = wtext;
             querysc();
         }
         else 
         {
-            
-            
+            //check different flags for query 
             for ( i = 2; i < argc; i = i + 2)
             {
-                
-
                 if (strcmp(argv[i], "state=") == 0)
                 {
-                    
                     strcpy_s(state,sizeof(state), argv[i+1]);
                 }
                 else if (strcmp(argv[i], "type=") == 0)
@@ -87,7 +84,6 @@ void main(int argc, CHAR* argv[])
                     strcpy_s(type,sizeof(type), argv[i+1]);
                 }
             }
-            
             queryall();
         }
         return;
@@ -103,17 +99,20 @@ void main(int argc, CHAR* argv[])
         }
         else if (_strcmpi(argv[3], "binPath=") != 0 )
         {
-                return;
+            //checking if binarypath parameter does not exist
+            return;
         }
         else
         {
+            //initiliaze the service name
             mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
             szSvcName = wtext;
             
+            //initiliaze the binary path
             mbstowcs_s(&outSize1, wtext1, strlen(argv[4]) + 1, argv[4], strlen(argv[4]));
             binpath = wtext1;
             
-
+            //set different flags 
             for (i = 5; i < argc; i = i + 2)
             {
 
@@ -151,6 +150,7 @@ void main(int argc, CHAR* argv[])
     {
         if (argc == 3)
         {
+            //initiliase service name
             mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
             szSvcName = wtext;
             qdesc();
@@ -163,6 +163,7 @@ void main(int argc, CHAR* argv[])
     {
         if (argc == 3)
         {
+            //initiliase service name
             mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
             szSvcName = wtext;
             startsc();
@@ -175,6 +176,7 @@ void main(int argc, CHAR* argv[])
     {
         if (argc == 3)
         {
+            //initiliase service name
             mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
             szSvcName = wtext;
             stopsc();
@@ -187,6 +189,7 @@ void main(int argc, CHAR* argv[])
     {
         if (argc == 3)
         {
+            //initiliase service name
             mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
             szSvcName = wtext;
             del();
@@ -200,17 +203,19 @@ void main(int argc, CHAR* argv[])
         
         if (argc <= 3)
         {
+            //return if insufficient parameters
             return;
         }
         else
         {
+            //initiliase service name
             mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
             szSvcName = wtext;
 
             for (i = 3; i < argc; i = i + 2)
             {
 
-
+                //check  different flags
                 if (strcmp(argv[i], "start=") == 0)
                 {
                     strcpy_s(start, sizeof(start), argv[i + 1]);
@@ -252,13 +257,14 @@ void main(int argc, CHAR* argv[])
         
         if (argc <= 3)
         {
-            printf("lol");
+            //return if insufficient parameters
             return;
         }
-        //printf("exist inside failure");
+        
         mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
         szSvcName = wtext;
 
+        //set different flags
         for (i = 3; i < argc; i = i + 2)
         {
             if (strcmp(argv[i], "reset=") == 0)
@@ -298,7 +304,7 @@ void create()
     DWORD     dwStartType= SERVICE_DEMAND_START;
     DWORD     dwErrorControl= SERVICE_ERROR_NORMAL;
     
-
+    //create scm handle
     schSCManager = OpenSCManager(
         NULL,                    // local computer
         NULL,                    // ServicesActive database 
@@ -309,6 +315,8 @@ void create()
         printf("OpenSCManager failed (%d)\n", GetLastError());
         return;
     }
+
+    //check the service type for service
 
     if (strcmp(type, "own") == 0)
     {
@@ -330,7 +338,8 @@ void create()
     {
         dwServiceType = SERVICE_RECOGNIZER_DRIVER;
     }
-   
+
+  //check start type of service
     if (strcmp(start, "boot") == 0)
     {
         dwStartType = SERVICE_BOOT_START;
@@ -351,6 +360,8 @@ void create()
     {
         dwStartType = SERVICE_DISABLED;
     }
+
+    //check the error type
     
     if (strcmp(error, "normal") == 0)
     {
@@ -403,8 +414,7 @@ void del()
 {
     
     SERVICE_STATUS ssStatus;
-    //LPCWSTR svcname;
-    //svcname = TEXT("tatti");
+    
     // Get a handle to the SCM database. 
 
     schSCManager = OpenSCManager(
@@ -453,7 +463,7 @@ void qdesc()
     lpsd = NULL;
     DWORD dwBytesNeeded, cbBufSize, dwError;
     
-    //szSvcName = TEXT("Tatti");
+    
     // Get a handle to the SCM database. 
 
     schSCManager = OpenSCManager(
@@ -548,7 +558,7 @@ void qdesc()
     _tprintf(TEXT("\n\nSERVICE_NAME: %s  \n"), szSvcName);
     _tprintf(TEXT("BINARY_PATH: %s\n"), lpsc->lpBinaryPathName);
     _tprintf(TEXT("DESCRIPTION: "));
-
+    //check if description is null or not
     if (lpsd->lpDescription != NULL && lstrcmp(lpsd->lpDescription, TEXT("")) != 0)
         _tprintf(TEXT("%s"), lpsd->lpDescription);
     _tprintf(TEXT("\n\n"));
@@ -1018,15 +1028,81 @@ BOOL StopDep()
 
 VOID failuresc()
 {
-    SC_HANDLE schSCManager;
-    SC_HANDLE schService;
-    LPWSTR rebootmsg = NULL;
-    LPWSTR lpcommand = NULL;
-    DWORD cac = 0;
-    DWORD resetperiod = 7;
-
-    SERVICE_FAILURE_ACTIONS sd;
     
+    
+    // Get a handle to the SCM database. 
+
+    schSCManager = OpenSCManager(
+        NULL,                    // local computer
+        NULL,                    // ServicesActive database 
+        SC_MANAGER_ALL_ACCESS);  // full access rights 
+
+    if (NULL == schSCManager)
+    {
+        printf("OpenSCManager failed (%d)\n", GetLastError());
+        return;
+    }
+
+    LPSERVICE_FAILURE_ACTIONS lpsd=NULL;
+    DWORD dwBytesNeeded, cbBufSize, dwError;
+
+    schService = OpenService(
+        schSCManager,          // SCM database 
+        szSvcName,             // name of service 
+        SERVICE_QUERY_CONFIG); // need query config access 
+
+    if (schService == NULL)
+    {
+        printf("OpenService failed (%d)\n", GetLastError());
+        CloseServiceHandle(schSCManager);
+        return;
+    }
+    //get the current failure configuratiion for the given service
+    if (!QueryServiceConfig2(
+        schService,
+        SERVICE_CONFIG_FAILURE_ACTIONS,
+        NULL,
+        0,
+        &dwBytesNeeded))
+    {
+        dwError = GetLastError();
+        if (ERROR_INSUFFICIENT_BUFFER == dwError)
+        {
+            cbBufSize = dwBytesNeeded;
+            lpsd = (LPSERVICE_FAILURE_ACTIONS)LocalAlloc(LMEM_FIXED, cbBufSize);
+        }
+        else
+        {
+            printf("QueryServiceConfig2 failed (%d)", dwError);
+            CloseServiceHandle(schService);
+            CloseServiceHandle(schSCManager);
+        }
+    }
+
+    if (!QueryServiceConfig2(
+        schService,
+        SERVICE_CONFIG_FAILURE_ACTIONS,
+        (LPBYTE)lpsd,
+        cbBufSize,
+        &dwBytesNeeded))
+    {
+        printf("QueryServiceConfig2 failed (%d)", GetLastError());
+        CloseServiceHandle(schService);
+        CloseServiceHandle(schSCManager);
+    }
+
+    
+
+    //initialise parameters for failure configuration using previous configuration
+    LPWSTR rebootmsg = lpsd->lpRebootMsg;
+    LPWSTR lpcommand = lpsd->lpCommand;
+    DWORD cac = lpsd->cActions;
+    DWORD resetperiod = lpsd->dwResetPeriod;
+    SERVICE_FAILURE_ACTIONS sd;
+    sd.lpsaActions= lpsd->lpsaActions;
+
+    CloseServiceHandle(schService);
+
     //set the value of reboot message
     if (strlen(reboot)!=0)
     {
@@ -1037,7 +1113,7 @@ VOID failuresc()
     }
     sd.lpRebootMsg = rebootmsg;
 
-
+    //set the value of commands
     if (strlen(command) != 0)
     {
         wchar_t wtext1[150];
@@ -1047,14 +1123,16 @@ VOID failuresc()
     }
     sd.lpCommand = lpcommand;
 
+    //set the value of reset time
     if (strlen(reset) != 0)
     {
         sscanf_s(reset, "%d", &resetperiod, sizeof(resetperiod));
     }
-    sd.dwResetPeriod = 8;
-    printf("%d\n", resetperiod);
+    sd.dwResetPeriod = resetperiod;
     
 
+
+    //set the value for actions
     if (strlen(action) != 0)
     {
         SC_ACTION_TYPE typeinp[6];
@@ -1105,33 +1183,15 @@ VOID failuresc()
             
             sd.lpsaActions = failActions;
         }
-        else
-        {
-            sd.lpsaActions = NULL;
-        }
+        
 
         
     }
-    else
-    {
-        sd.lpsaActions = NULL;
-    }
+    //set the value of number of actions
     sd.cActions = cac;
     
 
-        
-    // Get a handle to the SCM database. 
-
-    schSCManager = OpenSCManager(
-        NULL,                    // local computer
-        NULL,                    // ServicesActive database 
-        SC_MANAGER_ALL_ACCESS);  // full access rights 
-
-    if (NULL == schSCManager)
-    {
-        printf("OpenSCManager failed (%d)\n", GetLastError());
-        return;
-    }
+    
 
     // Get a handle to the service.
 
@@ -1147,10 +1207,10 @@ VOID failuresc()
         return;
     }
 
-    // Change the service description.
+    // Update the failure configuration
     
 
-    printf("%d", sd.dwResetPeriod);
+    
     
     if (!ChangeServiceConfig2(
         schService,                 // handle to service
@@ -1167,6 +1227,8 @@ VOID failuresc()
 
 VOID configsc()
 {
+
+    //get the current service configuration
     DWORD dwBytesNeeded, cbBufSize, dwError;
     LPQUERY_SERVICE_CONFIG lpsc=NULL;
 
@@ -1224,15 +1286,11 @@ VOID configsc()
         CloseServiceHandle(schSCManager);
         return;
     }
-    _tprintf(TEXT("  Type: 0x%x\n"), lpsc->dwServiceType);
-    _tprintf(TEXT("  Start Type: 0x%x\n"), lpsc->dwStartType);
-    _tprintf(TEXT("  Error Control: 0x%x\n"), lpsc->dwErrorControl);
-    _tprintf(TEXT("  Binary path: %s\n"), lpsc->lpBinaryPathName);
-    _tprintf(TEXT("  Account: %s\n"), lpsc->lpServiceStartName);
-
+   
 
     CloseServiceHandle(schService);
 
+    //initialize the current configuration in variables
         DWORD     ServiceType= lpsc->dwServiceType;
         DWORD     StartType = lpsc->dwStartType;
         DWORD     Error = lpsc->dwErrorControl;
@@ -1240,20 +1298,25 @@ VOID configsc()
         LPCWSTR   Pass = NULL;
         LPCWSTR   Display = lpsc->lpDisplayName;
 
+        //set binary path
         if (binpath != NULL)
         {
             BinaryPa = binpath;
         }
 
+        //set password
         if (password != NULL)
         {
             Pass = password;
         }
 
+        //set displayname
         if (displayname != NULL)
         {
             Display = displayname;
         }
+
+        //set service type
         if (strcmp(type, "own") == 0)
         {
             ServiceType = SERVICE_WIN32_OWN_PROCESS;
@@ -1275,6 +1338,7 @@ VOID configsc()
             ServiceType = SERVICE_RECOGNIZER_DRIVER;
         }
 
+        //set start type of service
         if (strcmp(start, "boot") == 0)
         {
             StartType = SERVICE_BOOT_START;
@@ -1296,6 +1360,8 @@ VOID configsc()
             StartType = SERVICE_DISABLED;
         }
 
+
+        //set error type
         if (strcmp(error, "normal") == 0)
         {
             Error = SERVICE_ERROR_NORMAL;
@@ -1328,20 +1394,20 @@ VOID configsc()
         return;
     }
 
-    // Change the service start type.
+    // Change the service sconfiguration
 
     if (!ChangeServiceConfig(
         schService,        // handle of service 
-        ServiceType, // service type: no change 
+        ServiceType, // service type:  
         StartType,  // service start type 
-        Error, // error control: no change 
-        BinaryPa,              // binary path: no change 
+        Error, // error control: 
+        BinaryPa,              // binary path:
         NULL,              // load order group: no change 
         NULL,              // tag ID: no change 
         NULL,              // dependencies: no change 
         NULL,              // account name: no change 
-        Pass,              // password: no change 
-        Display))            // display name: no change
+        Pass,              // password: 
+        Display))            // display name: 
     {
         printf("ChangeServiceConfig failed (%d)\n", GetLastError());
     }
@@ -1386,7 +1452,7 @@ void querysc()
         return;
     }
 
-    // Check the status in case the service is not stopped. 
+    // Query the service details
 
     if (!QueryServiceStatusEx(
         schService,                     // handle to service 
@@ -1403,6 +1469,8 @@ void querysc()
    
     _tprintf(TEXT("\nSERVICE_NAME: %s  \n"), szSvcName);
     DWORD cch = 0;
+
+    //Display name is stored in a different system data type
     if (!GetServiceDisplayNameW(schSCManager, szSvcName, nullptr, &cch))
     {
         if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
@@ -1435,9 +1503,8 @@ void queryall()
     DWORD        dwServiceType=  SERVICE_WIN32 ;
     DWORD        dwServiceState= SERVICE_ACTIVE;
 
-    //char para[20] = "yes";
-    //char value[20];
-   
+    
+        //set the service type   
         if (strcmp(type, "driver")==0)
         {
             dwServiceType = SERVICE_DRIVER;
@@ -1469,7 +1536,7 @@ void queryall()
         
 
     
-
+        //set the state of the service
         if (strcmp(state, "active") == 0)
         {
             dwServiceState = SERVICE_ACTIVE;
@@ -1483,7 +1550,7 @@ void queryall()
             dwServiceState = SERVICE_STATE_ALL;
         }
 
-       // printf("%x\n", dwServiceType);
+       
         
     schSCManager = OpenSCManager(
         NULL,                    // local computer
@@ -1498,7 +1565,7 @@ void queryall()
 
     DWORD bytesNeeded;
     DWORD servicesNum;
-
+    //enumerate all services
     BOOL status = EnumServicesStatusEx(
         schSCManager,
         SC_ENUM_PROCESS_INFO,
@@ -1512,7 +1579,7 @@ void queryall()
         NULL
     );
 
-
+    //this set is used to determine correcr buffer size
     PBYTE lpBytes = (PBYTE)malloc(bytesNeeded);
 
     status = EnumServicesStatusEx(
@@ -1533,7 +1600,7 @@ void queryall()
     ENUM_SERVICE_STATUS_PROCESS* services = (ENUM_SERVICE_STATUS_PROCESS*)lpBytes;
    
     CloseServiceHandle(schSCManager);
-
+    //enumerate through different services
     for (i = 0; i < servicesNum; i++)
     {
         szSvcName = services[i].lpServiceName;
