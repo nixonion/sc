@@ -1,6 +1,6 @@
 SC.EXE
 
-Implementation of windows command line program sc that is used for communicating with the Service Control Manager and services. The implementaion is done using with C++ using WIN32 APIs.
+Implementation of windows command line program sc that is used for communicating with the Service Control Manager and services. The implementaion is done using WIN32 APIs in C++.
 
 
 ----------------------------
