@@ -12,7 +12,7 @@ DESCRIPTION:
         SC is a command line program used for communicating with the Service Control Manager and services.
 USAGE:
 
-        sc [command] [service name] <option1> <option2>...
+        sc.exe [command] [service name] <option1> <option2>...
 
         Further help on commands can be obtained by typing: "sc [command]" 
         Commands:
