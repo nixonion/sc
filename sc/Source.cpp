@@ -14,10 +14,10 @@ CHAR error[50];
 LPCWSTR binpath=NULL;
 LPCWSTR password=NULL;
 LPCWSTR displayname=NULL;
-TCHAR reset[50];
-TCHAR reboot[50];
-TCHAR action[50];
-TCHAR command[50];
+CHAR reset[50]="";
+CHAR reboot[100]="";
+CHAR action[100]="";
+CHAR command[100]="";
 
 void create();
 void del();
@@ -42,21 +42,21 @@ void main(int argc, CHAR* argv[])
         
     }
 
-    wchar_t wtext[50];
+    wchar_t wtext[100];
     size_t outSize;
 
-    wchar_t wtext1[50];
+    wchar_t wtext1[100];
     size_t outSize1;
 
-    wchar_t wtext2[50];
+    wchar_t wtext2[100];
     size_t outSize2;
 
-    wchar_t wtext3[50];
+    wchar_t wtext3[100];
     size_t outSize3;
 
     int i;
     
-    
+    // sc query
     if (strcmp(argv[1], "query") == 0)
     {
         if (argc == 2)
@@ -93,6 +93,8 @@ void main(int argc, CHAR* argv[])
         return;
         
     }
+
+    //sc create
     if (strcmp(argv[1], "create") == 0)
     {
         if (argc <= 4)
@@ -108,8 +110,9 @@ void main(int argc, CHAR* argv[])
             mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
             szSvcName = wtext;
             
-            mbstowcs_s(&outSize1, wtext1, strlen(argv[4]) + 1, argv[4], strlen(argv[2]));
+            mbstowcs_s(&outSize1, wtext1, strlen(argv[4]) + 1, argv[4], strlen(argv[4]));
             binpath = wtext1;
+            
 
             for (i = 5; i < argc; i = i + 2)
             {
@@ -141,10 +144,9 @@ void main(int argc, CHAR* argv[])
             create();
             return;
         }
-        
-
-        
+           
     }
+    //sc qdescription
     if (strcmp(argv[1], "qdescription") == 0)
     {
         if (argc == 3)
@@ -155,7 +157,7 @@ void main(int argc, CHAR* argv[])
         }
         return;
     }
-    
+    //sc start
     if (strcmp(argv[1], "start") == 0)
     {
         if (argc == 3)
@@ -166,6 +168,7 @@ void main(int argc, CHAR* argv[])
         }
         return;
     }
+    //sc stop
     if (strcmp(argv[1], "stop") == 0)
     {
         if (argc == 3)
@@ -176,6 +179,7 @@ void main(int argc, CHAR* argv[])
         }
         return;
     }
+    //sc delete
     if (strcmp(argv[1], "delete") == 0)
     {
         if (argc == 3)
@@ -186,15 +190,46 @@ void main(int argc, CHAR* argv[])
         }
         return;
     }
+    //sc config
     if (strcmp(argv[1], "config") == 0)
     {
         //SvcInstall();
         //return;
     }
+
+    //sc failure
     if (strcmp(argv[1], "failure") == 0)
     {
-        //SvcInstall();
-        //return;
+        if (argc <= 3)
+        {
+            return;
+        }
+        
+        mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
+        szSvcName = wtext;
+
+        for (i = 3; i < argc; i = i + 2)
+        {
+            if (strcmp(argv[i], "reset=") == 0)
+            {
+                strcpy_s(reset, sizeof(reset), argv[i + 1]);
+            }
+            else if (strcmp(argv[i], "reboot=") == 0)
+            {
+                strcpy_s(reboot, sizeof(reboot), argv[i + 1]);
+            }
+            else if (strcmp(argv[i], "command=") == 0)
+            {
+                strcpy_s(command, sizeof(type), argv[i + 1]);
+            }
+            else if (strcmp(argv[i], "actions=") == 0)
+            {
+                strcpy_s(action, sizeof(action), argv[i + 1]);
+            }
+        }
+
+
+        return;
     }
     
 
@@ -210,18 +245,7 @@ void create()
     DWORD     dwServiceType= SERVICE_WIN32_OWN_PROCESS;
     DWORD     dwStartType= SERVICE_DEMAND_START;
     DWORD     dwErrorControl= SERVICE_ERROR_NORMAL;
-    //WCHAR lpwText = new WCHAR[49 + 1];
-   /*
-    LPWSTR szPath=NULL;
-    wcscpy_s(szPath ,100 ,binpath);
-    //szPath = TEXT("C:\\Windows\\System32\\notepad.exe");
-    if (!GetModuleFileName(NULL, szPath, 100))
-    {
-        printf("Cannot install service (%d)\n", GetLastError());
-        return;
-    }
-    */
-    // Get a handle to the SCM database. 
+    
 
     schSCManager = OpenSCManager(
         NULL,                    // local computer
@@ -292,7 +316,7 @@ void create()
     {
         dwErrorControl = SERVICE_ERROR_IGNORE;
     }
-
+   
 
     // Create the service
 
@@ -944,29 +968,36 @@ VOID failuresc()
 {
     SC_HANDLE schSCManager;
     SC_HANDLE schService;
-    //SERVICE_DESCRIPTION sd;
-    SERVICE_FAILURE_ACTIONS sd;
-    //LPTSTR szDesc = TEXT("This is a test description");
-    //char *t = "sss";
-    char text[] = "something";
-    wchar_t wtext[20];
-    size_t outSize;
-    mbstowcs_s(&outSize,wtext, strlen(text) + 1, text, strlen(text));
-    LPWSTR rebootmsg= wtext;
-
-    char text1[] = "something";
-    wchar_t wtext1[20];
-    size_t outSize1;
-    mbstowcs_s(&outSize1, wtext1, strlen(text1) + 1, text1, strlen(text1));
-    LPWSTR lpcommand = wtext1;
-   
+    LPWSTR rebootmsg = NULL;
+    LPWSTR lpcommand = NULL;
     const DWORD cac = 1;
-    //const int i = (int) cac;
-    SC_ACTION failActions[cac];
-    failActions[0].Type = SC_ACTION_NONE;
-    failActions[0].Delay = 120000;
+    DWORD resetperiod = 10;
 
-    DWORD resetperiod= 10;
+    SERVICE_FAILURE_ACTIONS sd;
+    
+    //set the value of reboot message
+    if (strlen(reboot)!=0)
+    {
+        wchar_t wtext[150];
+        size_t outSize;
+        mbstowcs_s(&outSize, wtext, strlen(reboot) + 1, reboot, strlen(reboot));
+        rebootmsg = wtext;
+    }
+
+    if (strlen(command) != 0)
+    {
+        wchar_t wtext1[150];
+        size_t outSize1;
+        mbstowcs_s(&outSize1, wtext1, strlen(command) + 1, command, strlen(command));
+        lpcommand = wtext1;
+    }
+
+    if (strlen(reset) != 0)
+    {
+        sscanf_s(reset, "%d", &resetperiod, sizeof(resetperiod));
+    }
+
+        
     // Get a handle to the SCM database. 
 
     schSCManager = OpenSCManager(
@@ -999,7 +1030,20 @@ VOID failuresc()
     sd.lpRebootMsg= rebootmsg;
     sd.lpCommand = lpcommand;
     sd.cActions=cac;
-    sd.lpsaActions = failActions;
+
+    if (strlen(action) != 0)
+    {
+        SC_ACTION failActions[cac];
+        failActions[0].Type = SC_ACTION_NONE;
+        failActions[0].Delay = 120000;
+        sd.lpsaActions = failActions;
+    }
+    else
+    {
+        sd.lpsaActions = NULL;
+    }
+
+    
 
     //sd.lpDescription = szDesc;
 
