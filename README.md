@@ -126,6 +126,7 @@ USAGE:
 -------------------
 
 sc.exe config
+
 DESCRIPTION:
 
         Modifies a service entry in the registry and Service Database.
