@@ -37,7 +37,8 @@ void main(int argc, CHAR* argv[])
     if (argc < 2)
     {
         printf("ERROR:\tIncorrect number of arguments\n\n");
-        
+        szSvcName = TEXT("test");
+        configsc();
         return;
         
     }
@@ -157,6 +158,7 @@ void main(int argc, CHAR* argv[])
         }
         return;
     }
+
     //sc start
     if (strcmp(argv[1], "start") == 0)
     {
@@ -168,6 +170,7 @@ void main(int argc, CHAR* argv[])
         }
         return;
     }
+
     //sc stop
     if (strcmp(argv[1], "stop") == 0)
     {
@@ -179,6 +182,7 @@ void main(int argc, CHAR* argv[])
         }
         return;
     }
+
     //sc delete
     if (strcmp(argv[1], "delete") == 0)
     {
@@ -190,21 +194,26 @@ void main(int argc, CHAR* argv[])
         }
         return;
     }
+
     //sc config
     if (strcmp(argv[1], "config") == 0)
     {
+        printf("exist");
+
         //SvcInstall();
         //return;
     }
-
+    
     //sc failure
     if (strcmp(argv[1], "failure") == 0)
     {
+        
         if (argc <= 3)
         {
+            printf("lol");
             return;
         }
-        
+        //printf("exist inside failure");
         mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
         szSvcName = wtext;
 
@@ -227,6 +236,7 @@ void main(int argc, CHAR* argv[])
                 strcpy_s(action, sizeof(action), argv[i + 1]);
             }
         }
+        failuresc();
 
 
         return;
@@ -970,8 +980,8 @@ VOID failuresc()
     SC_HANDLE schService;
     LPWSTR rebootmsg = NULL;
     LPWSTR lpcommand = NULL;
-    const DWORD cac = 1;
-    DWORD resetperiod = 10;
+    DWORD cac = 0;
+    DWORD resetperiod = 7;
 
     SERVICE_FAILURE_ACTIONS sd;
     
@@ -983,6 +993,8 @@ VOID failuresc()
         mbstowcs_s(&outSize, wtext, strlen(reboot) + 1, reboot, strlen(reboot));
         rebootmsg = wtext;
     }
+    sd.lpRebootMsg = rebootmsg;
+
 
     if (strlen(command) != 0)
     {
@@ -991,176 +1003,83 @@ VOID failuresc()
         mbstowcs_s(&outSize1, wtext1, strlen(command) + 1, command, strlen(command));
         lpcommand = wtext1;
     }
+    sd.lpCommand = lpcommand;
 
     if (strlen(reset) != 0)
     {
         sscanf_s(reset, "%d", &resetperiod, sizeof(resetperiod));
     }
-
-        
-    // Get a handle to the SCM database. 
-
-    schSCManager = OpenSCManager(
-        NULL,                    // local computer
-        NULL,                    // ServicesActive database 
-        SC_MANAGER_ALL_ACCESS);  // full access rights 
-
-    if (NULL == schSCManager)
-    {
-        printf("OpenSCManager failed (%d)\n", GetLastError());
-        return;
-    }
-
-    // Get a handle to the service.
-
-    schService = OpenService(
-        schSCManager,            // SCM database 
-        szSvcName,               // name of service 
-        SERVICE_CONFIG_FAILURE_ACTIONS);  // need change config access 
-
-    if (schService == NULL)
-    {
-        printf("OpenService failed (%d)\n", GetLastError());
-        CloseServiceHandle(schSCManager);
-        return;
-    }
-
-    // Change the service description.
-    sd.dwResetPeriod= resetperiod;
-    sd.lpRebootMsg= rebootmsg;
-    sd.lpCommand = lpcommand;
-    sd.cActions=cac;
+    sd.dwResetPeriod = 8;
+    printf("%d\n", resetperiod);
+    
 
     if (strlen(action) != 0)
     {
-        SC_ACTION failActions[cac];
-        failActions[0].Type = SC_ACTION_NONE;
-        failActions[0].Delay = 120000;
-        sd.lpsaActions = failActions;
+        SC_ACTION_TYPE typeinp[6];
+        DWORD delayt[6];
+        
+        char* next_token;
+        char* token = strtok_s(action, "/", &next_token);
+        int ci = 0;
+        while (token != NULL) 
+        {
+            printf("%s =", token, &next_token);
+            if (strcmp(token, "run") == 0)
+            {
+                typeinp[ci]= SC_ACTION_RUN_COMMAND;
+            }
+            else if (strcmp(token, "restart") == 0)
+            {
+                typeinp[ci] = SC_ACTION_RESTART;
+            }
+            else if (strcmp(token, "reboot") == 0)
+            {
+                typeinp[ci] = SC_ACTION_REBOOT;
+            }
+            else if (strcmp(token, "none") == 0)
+            {
+                typeinp[ci] = SC_ACTION_NONE;
+            }
+            token = strtok_s(NULL, "/", &next_token);
+
+            if (token != NULL)
+            {
+                printf(" %s\n", token);
+                delayt[ci] = atoi(token);
+                token = strtok_s(NULL, "/", &next_token);
+
+                ci = ci + 1;
+            }
+        }
+        if (ci != 0)
+        {
+            cac = ci;
+            SC_ACTION failActions[3];
+            for (int j = 0; j < ci; j++)
+            {
+                failActions[j].Type = typeinp[j];
+                failActions[j].Delay = delayt[j];
+            }
+            
+            sd.lpsaActions = failActions;
+        }
+        else
+        {
+            sd.lpsaActions = NULL;
+        }
+
+        
     }
     else
     {
         sd.lpsaActions = NULL;
     }
-
+    sd.cActions = cac;
     
 
-    //sd.lpDescription = szDesc;
-
-    if (!ChangeServiceConfig2(
-        schService,                 // handle to service
-        SERVICE_CONFIG_DESCRIPTION, // change: description
-        &sd))                      // new description
-    {
-        printf("ChangeServiceConfig2 failed\n");
-    }
-    else printf("Service description updated successfully.\n");
-
-    CloseServiceHandle(schService);
-    CloseServiceHandle(schSCManager);
-}
-
-VOID configsc()
-{
-        DWORD     ServiceType= SERVICE_NO_CHANGE;
-        DWORD     StartType = SERVICE_NO_CHANGE;
-        DWORD     Error = SERVICE_NO_CHANGE;
-        LPCWSTR   BinPath = NULL;
-        LPCWSTR   LoadOGroup = NULL;
-        LPDWORD   TagId = NULL;
-        LPCWSTR   Dependencies = NULL;
-        LPCWSTR   ServiceStartName = NULL;
-        LPCWSTR   Password = NULL;
-        LPCWSTR   DisplayName = NULL;
         
-        /*
-        char para[20]="yes";
-        char value[20];
-        if (strcmp(para, "type"))
-        {
-            if (strcmp(value, "own"))
-            {
-                ServiceType = SERVICE_WIN32_OWN_PROCESS;
-            }
-            else if (strcmp(value, "share"))
-            {
-                ServiceType = SERVICE_WIN32_SHARE_PROCESS;
-            }
-            else if (strcmp(value, "interact"))
-            {
-                ServiceType = SERVICE_INTERACTIVE_PROCESS;
-            }
-            else if (strcmp(value, "kernel"))
-            {
-                ServiceType = SERVICE_KERNEL_DRIVER;
-            }
-            else if (strcmp(value, "filesys")) 
-            {
-                ServiceType = SERVICE_FILE_SYSTEM_DRIVER;
-            }
-            
+    // Get a handle to the SCM database. 
 
-
-        }
-        else if (strcmp(para, "start"))
-        {
-                
-            if (strcmp(value, "boot"))
-            {
-                StartType = SERVICE_BOOT_START;
-            }
-            else if (strcmp(value, "system"))
-            {
-                StartType = SERVICE_SYSTEM_START;
-            }
-            else if (strcmp(value, "auto"))
-            {
-                StartType = SERVICE_AUTO_START;
-            }
-            else if (strcmp(value, "demand"))
-            {
-                StartType = SERVICE_DEMAND_START;
-            }
-            else if (strcmp(value, "disabled"))
-            {
-                StartType = SERVICE_DISABLED;
-            }
-            else if (strcmp(value, "delayed-auto"))
-            {
-                StartType = ;
-            }
-            
-        }
-        else if (strcmp(para, "error"))
-        {
-            if (strcmp(value, "normal"))
-            {
-                Error = SERVICE_ERROR_NORMAL;
-            }
-            else if (strcmp(value, "severe"))
-            {
-                Error = SERVICE_ERROR_SEVERE;
-            }
-            else if (strcmp(value, "critical"))
-            {
-                Error = SERVICE_ERROR_CRITICAL;
-            }
-            else if (strcmp(value, "ignore"))
-            {
-                Error = SERVICE_ERROR_IGNORE;
-            }
-        }
-        else if (strcmp(para, "binPath"))
-        {
-        }
-        
-        else if (strcmp(para, "DisplayName"))
-        {
-        }
-        else if (strcmp(para, "password"))
-        {
-        }
-        */
     schSCManager = OpenSCManager(
         NULL,                    // local computer
         NULL,                    // ServicesActive database 
@@ -1186,20 +1105,202 @@ VOID configsc()
         return;
     }
 
+    // Change the service description.
+    
+
+    printf("%d", sd.dwResetPeriod);
+    
+    if (!ChangeServiceConfig2(
+        schService,                 // handle to service
+        SERVICE_CONFIG_FAILURE_ACTIONS, // change: failure
+        &sd))                      // new description
+    {
+        printf("ChangeServiceConfig2 failed\n");
+    }
+    else printf("Service description updated successfully.\n");
+
+    CloseServiceHandle(schService);
+    CloseServiceHandle(schSCManager);
+}
+
+VOID configsc()
+{
+    DWORD dwBytesNeeded, cbBufSize, dwError;
+    LPQUERY_SERVICE_CONFIG lpsc=NULL;
+
+    schSCManager = OpenSCManager(
+        NULL,                    // local computer
+        NULL,                    // ServicesActive database 
+        SC_MANAGER_ALL_ACCESS);  // full access rights 
+
+    if (NULL == schSCManager)
+    {
+        printf("OpenSCManager failed (%d)\n", GetLastError());
+        return;
+    }
+
+    schService = OpenService(
+        schSCManager,         // SCM database 
+        szSvcName,            // name of service 
+        SERVICE_QUERY_CONFIG);  // full access 
+
+    if (schService == NULL)
+    {
+        printf("OpenService failed (%d)\n", GetLastError());
+        CloseServiceHandle(schSCManager);
+        return;
+    }
+    if (!QueryServiceConfig(
+        schService,
+        NULL,
+        0,
+        &dwBytesNeeded))
+    {
+        dwError = GetLastError();
+        if (ERROR_INSUFFICIENT_BUFFER == dwError)
+        {
+            cbBufSize = dwBytesNeeded;
+            lpsc = (LPQUERY_SERVICE_CONFIG)LocalAlloc(LMEM_FIXED, cbBufSize);
+        }
+        else
+        {
+            printf("QueryServiceConfig failed (%d)", dwError);
+            CloseServiceHandle(schService);
+            CloseServiceHandle(schSCManager);
+            return;
+        }
+    }
+
+    if (!QueryServiceConfig(
+        schService,
+        lpsc,
+        cbBufSize,
+        &dwBytesNeeded))
+    {
+        printf("QueryServiceConfig failed (%d)", GetLastError());
+        CloseServiceHandle(schService);
+        CloseServiceHandle(schSCManager);
+        return;
+    }
+    _tprintf(TEXT("  Type: 0x%x\n"), lpsc->dwServiceType);
+    _tprintf(TEXT("  Start Type: 0x%x\n"), lpsc->dwStartType);
+    _tprintf(TEXT("  Error Control: 0x%x\n"), lpsc->dwErrorControl);
+    _tprintf(TEXT("  Binary path: %s\n"), lpsc->lpBinaryPathName);
+    _tprintf(TEXT("  Account: %s\n"), lpsc->lpServiceStartName);
+
+
+    CloseServiceHandle(schService);
+
+        DWORD     ServiceType= lpsc->dwServiceType;
+        DWORD     StartType = lpsc->dwStartType;
+        DWORD     Error = lpsc->dwErrorControl;
+        LPCWSTR   BinaryPa = lpsc->lpBinaryPathName;
+       
+        LPCWSTR   Pass = NULL;
+        LPCWSTR   Display = lpsc->lpDisplayName;
+
+        if (binpath != NULL)
+        {
+            BinaryPa = binpath;
+        }
+
+        if (password != NULL)
+        {
+            Pass = password;
+        }
+
+        if (displayname != NULL)
+        {
+            Display = displayname;
+        }
+        if (strcmp(type, "own") == 0)
+        {
+            ServiceType = SERVICE_WIN32_OWN_PROCESS;
+        }
+        else if (strcmp(type, "share") == 0)
+        {
+            ServiceType = SERVICE_WIN32_SHARE_PROCESS;
+        }
+        else if (strcmp(type, "kernel") == 0)
+        {
+            ServiceType = SERVICE_KERNEL_DRIVER;
+        }
+        else if (strcmp(type, "filesys") == 0)
+        {
+            ServiceType = SERVICE_FILE_SYSTEM_DRIVER;
+        }
+        else if (strcmp(type, "rec") == 0)
+        {
+            ServiceType = SERVICE_RECOGNIZER_DRIVER;
+        }
+
+        if (strcmp(start, "boot") == 0)
+        {
+            StartType = SERVICE_BOOT_START;
+        }
+        else if (strcmp(start, "system") == 0)
+        {
+            StartType = SERVICE_SYSTEM_START;
+        }
+        else if (strcmp(start, "auto") == 0)
+        {
+            StartType = SERVICE_AUTO_START;
+        }
+        else if (strcmp(start, "demand") == 0)
+        {
+            StartType = SERVICE_DEMAND_START;
+        }
+        else if (strcmp(start, "disabled") == 0)
+        {
+            StartType = SERVICE_DISABLED;
+        }
+
+        if (strcmp(error, "normal") == 0)
+        {
+            Error = SERVICE_ERROR_NORMAL;
+        }
+        else if (strcmp(error, "severe") == 0)
+        {
+            Error = SERVICE_ERROR_SEVERE;
+        }
+        else if (strcmp(error, "critical") == 0)
+        {
+            Error = SERVICE_ERROR_CRITICAL;
+        }
+        else if (strcmp(error, "ignore") == 0)
+        {
+            Error = SERVICE_ERROR_IGNORE;
+        }
+    
+
+    // Get a handle to the service.
+
+    schService = OpenService(
+        schSCManager,            // SCM database 
+        szSvcName,               // name of service 
+        SERVICE_CHANGE_CONFIG);  // need change config access 
+
+    if (schService == NULL)
+    {
+        printf("OpenService failed (%d)\n", GetLastError());
+        CloseServiceHandle(schSCManager);
+        return;
+    }
+
     // Change the service start type.
 
     if (!ChangeServiceConfig(
         schService,        // handle of service 
-        SERVICE_NO_CHANGE, // service type: no change 
-        SERVICE_DISABLED,  // service start type 
-        SERVICE_NO_CHANGE, // error control: no change 
-        NULL,              // binary path: no change 
+        ServiceType, // service type: no change 
+        StartType,  // service start type 
+        Error, // error control: no change 
+        BinaryPa,              // binary path: no change 
         NULL,              // load order group: no change 
         NULL,              // tag ID: no change 
         NULL,              // dependencies: no change 
         NULL,              // account name: no change 
-        NULL,              // password: no change 
-        NULL))            // display name: no change
+        Pass,              // password: no change 
+        Display))            // display name: no change
     {
         printf("ChangeServiceConfig failed (%d)\n", GetLastError());
     }
