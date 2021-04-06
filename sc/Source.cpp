@@ -37,8 +37,7 @@ void main(int argc, CHAR* argv[])
     if (argc < 2)
     {
         printf("ERROR:\tIncorrect number of arguments\n\n");
-        szSvcName = TEXT("test");
-        configsc();
+        
         return;
         
     }
@@ -198,10 +197,53 @@ void main(int argc, CHAR* argv[])
     //sc config
     if (strcmp(argv[1], "config") == 0)
     {
-        printf("exist");
+        
+        if (argc <= 3)
+        {
+            return;
+        }
+        else
+        {
+            mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
+            szSvcName = wtext;
 
-        //SvcInstall();
-        //return;
+            for (i = 3; i < argc; i = i + 2)
+            {
+
+
+                if (strcmp(argv[i], "start=") == 0)
+                {
+                    strcpy_s(start, sizeof(start), argv[i + 1]);
+                }
+                else if (strcmp(argv[i], "type=") == 0)
+                {
+                    strcpy_s(type, sizeof(type), argv[i + 1]);
+                }
+                else if (strcmp(argv[i], "error=") == 0)
+                {
+                    strcpy_s(error, sizeof(error), argv[i + 1]);
+                }
+                else if (_strcmpi(argv[i], "DisplayName=") == 0)
+                {
+                    mbstowcs_s(&outSize2, wtext2, strlen(argv[i + 1]) + 1, argv[i + 1], strlen(argv[i + 1]));
+                    displayname = wtext2;
+                }
+                else if (_strcmpi(argv[i], "password=") == 0)
+                {
+                    mbstowcs_s(&outSize3, wtext3, strlen(argv[i + 1]) + 1, argv[i + 1], strlen(argv[i + 1]));
+                    password = wtext3;
+                }
+                else if (_strcmpi(argv[i], "binPath=") == 0)
+                {
+                    mbstowcs_s(&outSize1, wtext1, strlen(argv[i+1]) + 1, argv[i+1], strlen(argv[i+1]));
+                    binpath = wtext1;
+                }
+            }
+            configsc();
+            return;
+        }
+        
+
     }
     
     //sc failure
@@ -1195,7 +1237,6 @@ VOID configsc()
         DWORD     StartType = lpsc->dwStartType;
         DWORD     Error = lpsc->dwErrorControl;
         LPCWSTR   BinaryPa = lpsc->lpBinaryPathName;
-       
         LPCWSTR   Pass = NULL;
         LPCWSTR   Display = lpsc->lpDisplayName;
 
@@ -1304,7 +1345,7 @@ VOID configsc()
     {
         printf("ChangeServiceConfig failed (%d)\n", GetLastError());
     }
-    else printf("Service disabled successfully.\n");
+    else printf("Service configuration changed successfully.\n");
 
     CloseServiceHandle(schService);
     CloseServiceHandle(schSCManager);
