@@ -1,0 +1,41 @@
+<Sysmon schemaversion="4.50">
+<HashAlgorithms>md5,sha256,IMPHASH</HashAlgorithms>
+<CheckRevocation/>
+
+<EventFiltering>
+	
+
+	<ImageLoad onmatch="include">
+
+		
+        <ImageLoaded condition="end with">ntdll.dll</ImageLoaded>
+        <ImageLoaded condition="end with">kernel32.dll</ImageLoaded>
+        <ImageLoaded condition="end with">kernelBase.dll</ImageLoaded>
+        <ImageLoaded condition="end with">advapi32.dll</ImageLoaded>
+                    
+	</ImageLoad>
+
+	<ImageLoad onmatch="exclude">
+		<Image condition="contains">C:\Windows\system32</Image>
+		<Image condition="contains">C:\Program Files (x86)\Microsoft Visual Studio</Image>
+		<Image condition="contains">C:\Program Files\WindowsApps</Image>
+		<Image condition="contains">sysmon</Image>
+		
+	</ImageLoad>
+
+
+	<RuleGroup groupRelation="and">
+		<RegistryEvent onmatch="include">
+			<TargetObject condition="contains">SYSTEM\CurrentControlSet\Services</TargetObject>
+			<Image condition="contains">services.exe</Image>
+			<EventType condition="is">CreateKey</EventType>
+			<EventType condition="is">DeleteKey</EventType>
+			
+		</RegistryEvent>
+	</RuleGroup>
+
+
+	
+	
+</EventFiltering>
+</Sysmon>
