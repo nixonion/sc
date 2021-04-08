@@ -30,13 +30,140 @@ VOID configsc(); //sc config
 void querysc(); //sc query  servicename
 void queryall(); //sc query
 
+void dispsc()
+{
+    printf("\nDESCRIPTION:\n\tSC is a command line program used for communicating with the Service Control Managerand services.\nUSAGE :\n\tsc[command][service name] <option1> <option2>...");
+
+    printf("\n\tFurther help on commands can be obtained by typing : 'sc [command]'");
+    printf("\n\n\tCommands :\n");
+    printf("\n\tquery---------- - Queries the status for a service, or \n\tenumerates the status for types of services. \n\tstart---------- - Starts a service.");
+    printf("\n\tstop------------Sends a STOP request to a service.");
+    printf("\n\tconfig----------Changes the configuration of a service(persistent).");
+    printf("\n\tfailure-------- - Changes the actions taken by a service upon failure.");
+    printf("\n\tqdescription----Queries the description for a service. \n\tdelete----------Deletes a service(from the registry). \n\tcreate----------Creates a service. (adds it to the registry).\n");
+}
+
+void dispcreate()
+{
+    printf("DESCRIPTION:\n"
+        "        Creates a service entry in the registry and Service Database.\n"
+        "USAGE:\n"
+        "        sc.exe create [service name] [binPath= ] <option1> <option2>...\n"
+        "\n"
+        "OPTIONS:\n"
+        "NOTE: The option name includes the equal sign.\n"
+        "      A space is required between the equal sign and the value.\n"
+        " type= <own|share|interact|kernel|filesys>\n"
+        "       (default = own)\n"
+        " start= <boot|system|auto|demand|disabled>\n"
+        "       (default = demand)\n"
+        " error= <normal|severe|critical|ignore>\n"
+        "       (default = normal)\n"
+        " binPath= <BinaryPathName to the .exe file>\n"
+        " DisplayName= <display name>\n"
+        " password= <password>");
+}
+
+void dispfailure()
+{
+    printf("DESCRIPTION:\n"
+        "        Changes the actions upon failure\n"
+        "USAGE:\n"
+        "        sc.exe failure [service name] <option1> <option2>...\n"
+        "\n"
+        "OPTIONS:\n"
+        "        reset=   <Length of period of no failures (in seconds)\n"
+        "                  after which to reset the failure count to 0 (may be INFINITE)>\n"
+        "                  (Must be used in conjunction with actions= )\n"
+        "        reboot=  <Message broadcast before rebooting on failure>\n"
+        "        command= <Command line to be run on failure>\n"
+        "        actions= <Failure actions and their delay time (in milliseconds),\n"
+        "                  separated by / (forward slash) -- e.g., run/5000/reboot/800\n"
+        "                  Valid actions are <run|restart|reboot> >\n"
+        "                  (Must be used in conjunction with the reset= option)");
+}
+void dispdesc()
+{
+    printf("DESCRIPTION:\n"
+        "        Retrieves the description string of a service.\n"
+        "USAGE:\n"
+        "        sc.exe qdescription [service name] ");
+}
+
+void dispdelete()
+{
+    printf("DESCRIPTION:\n"
+        "        Deletes a service entry from the registry.\n"
+        "        If the service is running, or another process has an\n"
+        "        open handle to the service, the service is simply marked\n"
+        "        for deletion.\n"
+        "USAGE:\n"
+        "        sc.exe delete [service name]");
+}
+
+void dispstart()
+{
+    printf("DESCRIPTION:\n"
+        "        Starts a service running.\n"
+        "USAGE:\n"
+        "        sc.exe start [service name] ");
+}
+
+void dispstop()
+{
+    printf("DESCRIPTION:\n"
+        "        Sends a STOP control request to a service.\n"
+        "USAGE:\n"
+        "        sc.exe stop [service name] ");
+
+}
+void dispconfig()
+{
+    printf("DESCRIPTION:\n"
+        "        Modifies a service entry in the registry and Service Database.\n"
+        "USAGE:\n"
+        "        sc.exe config [service name] <option1> <option2>...\n"
+        "\n"
+        "OPTIONS:\n"
+        "NOTE: The option name includes the equal sign.\n"
+        "      A space is required between the equal sign and the value.\n"
+        "      To remove the dependency, use a single / as dependency value.\n"
+        " type= <own|share|interact|kernel|filesys>\n"
+        " start= <boot|system|auto|demand|disabled>\n"
+        " error= <normal|severe|critical|ignore>\n"
+        " binPath= <BinaryPathName to the .exe file>\n"
+        " DisplayName= <display name>\n"
+        " password= <password>\n"
+        "");
+}
+void dispquery()
+{
+    printf("DESCRIPTION:\n"
+        "        Obtains and displays information about the specified service, driver, type of service, or type of driver. If the query command is followed by a service name, the status for that service is returned.  Further options do not apply in\n"
+        "        this case.  If the query command is followed by nothing or one of\n"
+        "        the options listed below, the services are enumerated.\n"
+        "USAGE:\n"
+        "        sc.exe query [service name] <option1> <option2>...\n"
+        "        sc.exe query <option1> <option2>...\n"
+        "\n"
+        "OPTIONS:\n"
+        "\n"
+        "    type=    Type of services to enumerate (driver, service, userservice, all)\n"
+        "             (default = service)\n"
+        "    state=   State of services to enumerate (inactive, all)\n"
+        "             (default = active)\n"
+        "\n"
+        "");
+}
 void main(int argc, CHAR* argv[])
 {
     
     //return if arguments are less
     if (argc < 2)
     {
-        printf("ERROR:\tIncorrect number of arguments\n\n");
+        
+        dispsc();
+        dispquery();
         return;
         
     }
@@ -95,11 +222,13 @@ void main(int argc, CHAR* argv[])
     {
         if (argc <= 4)
         {
+            dispcreate();
             return;
         }
         else if (_strcmpi(argv[3], "binPath=") != 0 )
         {
             //checking if binarypath parameter does not exist
+            dispcreate();
             return;
         }
         else
@@ -154,7 +283,9 @@ void main(int argc, CHAR* argv[])
             mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
             szSvcName = wtext;
             qdesc();
+            return;
         }
+        dispdesc();
         return;
     }
 
@@ -167,7 +298,9 @@ void main(int argc, CHAR* argv[])
             mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
             szSvcName = wtext;
             startsc();
+            return;
         }
+        dispstart();
         return;
     }
 
@@ -180,7 +313,9 @@ void main(int argc, CHAR* argv[])
             mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
             szSvcName = wtext;
             stopsc();
+            return;
         }
+        dispstop();
         return;
     }
 
@@ -193,7 +328,9 @@ void main(int argc, CHAR* argv[])
             mbstowcs_s(&outSize, wtext, strlen(argv[2]) + 1, argv[2], strlen(argv[2]));
             szSvcName = wtext;
             del();
+            return;
         }
+        dispdelete();
         return;
     }
 
@@ -204,6 +341,7 @@ void main(int argc, CHAR* argv[])
         if (argc <= 3)
         {
             //return if insufficient parameters
+            dispconfig();
             return;
         }
         else
@@ -258,6 +396,7 @@ void main(int argc, CHAR* argv[])
         if (argc <= 3)
         {
             //return if insufficient parameters
+            dispfailure();
             return;
         }
         
@@ -290,7 +429,7 @@ void main(int argc, CHAR* argv[])
         return;
     }
     
-
+    dispsc();
     
 }
 
@@ -391,7 +530,7 @@ void create()
         dwServiceType,              // service type 
         dwStartType,                // start type 
         dwErrorControl,             // error control type 
-        binpath,                    //L"C:\\Windows\\System32\\notepad.exe",          path to service's binary 
+        binpath,                    //L"C:\Windows\System32\notepad.exe",          path to service's binary 
         NULL,                       // no load ordering group 
         NULL,                       // no tag identifier 
         NULL,                       // no dependencies 
